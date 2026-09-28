@@ -1,0 +1,6 @@
+{
+  "name": "Ame Pregar - Devocional ADEC",
+  "description": "Devocional de oratória para jovens com Pr. Cleovaldo Batista e motor de cortes virais de sermões estilo OpusClip.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
