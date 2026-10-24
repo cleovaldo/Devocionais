@@ -7,7 +7,7 @@
   <meta name="description" content="Teleprompter Profissional gratuito, responsivo e focado em privacidade que roda 100% no navegador sem servidores.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -31,9 +31,11 @@
       user-select: text;
       font-family: inherit;
     }
+    /* Mode views */
     .view-mode { display: none; }
     .view-mode.active { display: flex; flex-direction: column; }
 
+    /* Custom scrollbars */
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-track { background: #09090b; }
     ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
@@ -48,7 +50,6 @@
       overflow-x: hidden;
       scroll-behavior: auto;
       background: #000000;
-      outline: none;
     }
     #prompterViewport::-webkit-scrollbar { display: none; }
     #prompterViewport { -ms-overflow-style: none; scrollbar-width: none; }
@@ -63,7 +64,12 @@
       cursor: pointer;
     }
 
-    /* Linha Guia de Leitura */
+    /* Mirroring */
+    .mirror-h { transform: scaleX(-1); }
+    .mirror-v { transform: scaleY(-1); }
+    .mirror-both { transform: scale(-1, -1); }
+
+    /* Reading eyeline guide */
     .eyeline-guide {
       position: fixed;
       left: 0;
@@ -86,45 +92,41 @@
     }
     .eyeline-guide::after { content: '◀'; }
 
-    /* Controles Flutuantes */
+    /* Controls overlay */
     #floatingControls {
       position: fixed;
       bottom: 24px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(18, 18, 22, 0.92);
+      background: rgba(18, 18, 22, 0.88);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 9999px;
       padding: 8px 18px;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
       z-index: 100;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.85);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
       transition: opacity 0.3s ease, transform 0.3s ease;
-      max-width: 96vw;
-      overflow-x: auto;
     }
-    #floatingControls::-webkit-scrollbar { display: none; }
-    #floatingControls { -ms-overflow-style: none; scrollbar-width: none; }
-
-    @media (max-width: 768px) {
+    @media (max-width: 640px) {
       #floatingControls {
-        bottom: 12px;
-        padding: 6px 12px;
-        gap: 8px;
+        bottom: 14px;
+        padding: 6px 10px;
+        gap: 6px;
+        max-width: 96vw;
       }
       .slider-group {
-        display: none !important;
+        display: none;
       }
       .btn-ctrl {
-        padding: 6px 10px !important;
+        padding: 8px 10px !important;
         font-size: 11px !important;
+        min-height: 40px;
       }
     }
-
     #floatingControls.fade-out {
       opacity: 0;
       transform: translateX(-50%) translateY(20px);
@@ -134,7 +136,7 @@
     .btn-ctrl {
       background: #27272a;
       color: #ffffff;
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 9999px;
       padding: 8px 14px;
       font-size: 13px;
@@ -148,7 +150,7 @@
     }
     .btn-ctrl:hover {
       background: #3f3f46;
-      border-color: rgba(255, 255, 255, 0.3);
+      border-color: rgba(255, 255, 255, 0.25);
     }
     .btn-ctrl.btn-primary {
       background: #facc15;
@@ -159,7 +161,7 @@
       background: #fde047;
     }
     .btn-ctrl.active {
-      background: #2563eb;
+      background: #3b82f6;
       color: #ffffff;
       border-color: #60a5fa;
     }
@@ -174,26 +176,23 @@
     .slider-group input[type="range"] {
       cursor: pointer;
       accent-color: #facc15;
-      width: 75px;
+      width: 80px;
     }
 
+    /* Paragraph hover in reading mode */
     .pro-paragraph {
       margin-bottom: 1.5em;
-      transition: background 0.2s ease;
-      border-radius: 6px;
+      transition: opacity 0.2s ease;
+      border-radius: 4px;
       padding: 4px 8px;
     }
     .pro-paragraph:hover {
-      background: rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.04);
     }
     .pro-pause {
-      color: #f87171;
-      background: rgba(239, 68, 68, 0.15);
-      border: 1px solid rgba(239, 68, 68, 0.35);
-      padding: 2px 6px;
-      border-radius: 4px;
+      color: #ef4444;
       font-weight: 700;
-      font-size: 0.85em;
+      font-size: 0.8em;
       letter-spacing: 0.05em;
     }
 
@@ -201,7 +200,7 @@
     #countdownOverlay {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.88);
+      background: rgba(0, 0, 0, 0.85);
       z-index: 200;
       display: none;
       align-items: center;
@@ -226,16 +225,17 @@
 
   <!-- ==================== MODO EDIÇÃO ==================== -->
   <div id="editorMode" class="view-mode active" style="min-height: 100vh; padding: 24px; max-width: 1200px; margin: 0 auto;">
-    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid #27272a; padding-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+    <!-- Header -->
+    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid #27272a; padding-bottom: 16px;">
       <div>
         <h1 style="font-size: 22px; font-weight: 800; display: flex; align-items: center; gap: 8px;">
           <span style="color: #facc15;">●</span> Teleprompter Pro Studio
         </h1>
-        <p style="font-size: 13px; color: #a1a1aa; margin-top: 4px;">Executado 100% localmente no navegador • Privacidade e Wake Lock integrados</p>
+        <p style="font-size: 13px; color: #a1a1aa; margin-top: 4px;">Executado 100% localmente no navegador • Privacidade Absoluta</p>
       </div>
-      <div>
-        <button id="btnStartPrompterTop" class="btn-ctrl btn-primary" style="padding: 10px 22px; font-size: 15px;">
-          ▶ Iniciar Teleprompter
+      <div style="display: flex; gap: 10px;">
+        <button id="btnStartPrompterTop" class="btn-ctrl btn-primary" style="padding: 10px 20px; font-size: 15px;">
+          ▶ Iniciar Teleprompter (Espaço)
         </button>
       </div>
     </header>
@@ -255,31 +255,31 @@
         <div id="metricTime" style="font-size: 24px; font-weight: 700; color: #4ade80; font-family: 'JetBrains Mono', monospace;">00:00</div>
       </div>
       <div style="background: #18181b; border: 1px solid #27272a; padding: 12px 16px; border-radius: 8px;">
-        <div style="font-size: 11px; text-transform: uppercase; color: #71717a; font-weight: 600;">Armazenamento Local</div>
-        <div style="font-size: 14px; font-weight: 600; color: #38bdf8; margin-top: 6px;">✓ Salvo Automaticamente</div>
+        <div style="font-size: 11px; text-transform: uppercase; color: #71717a; font-weight: 600;">Status do Armazenamento</div>
+        <div style="font-size: 14px; font-weight: 600; color: #38bdf8; margin-top: 6px;">✓ Salvo no LocalStorage</div>
       </div>
     </div>
 
-    <!-- Script Editor -->
+    <!-- Script Title & Editor -->
     <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
       <input type="text" id="scriptTitleInput" value="desconstruindo - Ep1" style="background: #18181b; border: 1px solid #27272a; color: #ffffff; padding: 12px 16px; border-radius: 8px; font-size: 18px; font-weight: 700; outline: none;" placeholder="Título do Roteiro...">
       
       <div style="display: flex; gap: 8px; flex-wrap: wrap;">
         <button id="btnInsertPause" class="btn-ctrl" type="button">+ Inserir [PAUSA]</button>
-        <button id="btnSamplePitch" class="btn-ctrl" type="button">Exemplo: Pitch (1 min)</button>
-        <button id="btnSamplePodcast" class="btn-ctrl" type="button">Exemplo: Filosofia/Podcast</button>
-        <button id="btnClearScript" class="btn-ctrl" type="button" style="color: #f87171; border-color: rgba(239,68,68,0.3);">Limpar Texto</button>
+        <button id="btnSamplePitch" class="btn-ctrl" type="button">Exemplo: Pitch</button>
+        <button id="btnSamplePodcast" class="btn-ctrl" type="button">Exemplo: Podcast</button>
+        <button id="btnClearScript" class="btn-ctrl" type="button" style="color: #f87171;">Limpar Texto</button>
       </div>
 
-      <textarea id="scriptTextarea" style="width: 100%; min-height: 380px; background: #0c0c0e; border: 1px solid #27272a; color: #f4f4f5; padding: 20px; border-radius: 8px; font-size: 16px; line-height: 1.7; resize: vertical; outline: none;"></textarea>
+      <textarea id="scriptTextarea" style="width: 100%; min-height: 400px; background: #0c0c0e; border: 1px solid #27272a; color: #f4f4f5; padding: 20px; border-radius: 8px; font-size: 17px; line-height: 1.7; resize: vertical; outline: none;"></textarea>
     </div>
 
-    <!-- Quick Settings -->
+    <!-- Quick Settings Accordion -->
     <div style="background: #121216; border: 1px solid #27272a; border-radius: 8px; padding: 18px; margin-bottom: 30px;">
       <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 14px; color: #f4f4f5;">Configurações Padrão de Leitura</h3>
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
         <div>
-          <label style="font-size: 12px; color: #a1a1aa; display: block; margin-bottom: 6px;">Cor do Texto</label>
+          <label style="font-size: 12px; color: #a1a1aa; display: block; margin-bottom: 6px;">Cor do Texto no Fundo Preto</label>
           <select id="settingColor" style="width: 100%; background: #1f1f23; color: #fff; border: 1px solid #333; padding: 8px; border-radius: 6px;">
             <option value="yellow" selected>Amarelo Pro (#FDE047)</option>
             <option value="white">Branco Studio (#FFFFFF)</option>
@@ -288,7 +288,7 @@
           </select>
         </div>
         <div>
-          <label style="font-size: 12px; color: #a1a1aa; display: block; margin-bottom: 6px;">Tamanho da Fonte (<span id="lblFontSize">52</span>px)</label>
+          <label style="font-size: 12px; color: #a1a1aa; display: block; margin-bottom: 6px;">Tamanho Inicial da Fonte (<span id="lblFontSize">52</span>px)</label>
           <input type="range" id="settingFontSize" min="28" max="110" value="52" style="width: 100%; accent-color: #facc15;">
         </div>
         <div>
@@ -311,19 +311,22 @@
     </div>
   </div>
 
-  <!-- ==================== MODO APRESENTAÇÃO ==================== -->
+  <!-- ==================== MODO APRESENTAÇÃO (TELEPROMPTER) ==================== -->
   <div id="prompterMode" class="view-mode" style="position: fixed; inset: 0; background: #000000; z-index: 50;">
+    
+    <!-- Linha Guia do Olhar -->
     <div id="eyelineGuide" class="eyeline-guide" style="top: 35%;"></div>
 
-    <div id="prompterViewport" tabindex="0">
+    <!-- Viewport com texto com rolagem suave -->
+    <div id="prompterViewport">
       <div id="prompterText" style="max-width: 70%; font-size: 52px; color: #fde047;"></div>
     </div>
 
     <!-- Câmera PIP Flutuante -->
-    <div id="cameraPipContainer" style="display: none; position: fixed; top: 16px; left: 50%; transform: translateX(-50%); width: 220px; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.2); background: #111; z-index: 60; box-shadow: 0 10px 25px rgba(0,0,0,0.85);">
-      <div style="background: rgba(0,0,0,0.85); padding: 5px 10px; font-size: 11px; display: flex; justify-content: space-between; align-items: center; color: #fff;">
-        <span id="pipRecBadge" style="color: #ef4444; font-weight: bold;">● PREVIEW</span>
-        <button id="btnClosePip" style="background: none; border: none; color: #aaa; cursor: pointer; font-size: 14px;" title="Fechar Câmera">✕</button>
+    <div id="cameraPipContainer" style="display: none; position: fixed; top: 16px; left: 50%; transform: translateX(-50%); width: 220px; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.2); background: #111; z-index: 60; box-shadow: 0 10px 25px rgba(0,0,0,0.8);">
+      <div style="background: rgba(0,0,0,0.8); padding: 4px 8px; font-size: 11px; display: flex; justify-content: space-between; align-items: center; color: #fff;">
+        <span id="pipRecBadge" style="color: #ef4444; font-weight: bold;">● REC 00:00</span>
+        <button id="btnClosePip" style="background: none; border: none; color: #aaa; cursor: pointer; font-size: 13px;">✕</button>
       </div>
       <video id="cameraPipVideo" autoplay playsinline muted style="width: 100%; aspect-ratio: 16/9; object-fit: cover; transform: scaleX(-1); background: #000;"></video>
     </div>
@@ -336,15 +339,18 @@
         <span id="playPauseIcon">▶</span> <span id="playPauseText">Play</span>
       </button>
 
-      <button id="btnRecordVideo" class="btn-ctrl" style="background: #dc2626; color: #ffffff; border-color: #ef4444;" title="Gravar Vídeo com a Webcam">
+      <!-- Botão Gravar Vídeo -->
+      <button id="btnRecordVideo" class="btn-ctrl" style="background: #dc2626; color: #ffffff; border-color: #ef4444;" title="Iniciar / Parar Gravação de Vídeo">
         <span id="recordDot">●</span> <span id="recordText">Gravar</span>
       </button>
 
-      <button id="btnToggleDirection" class="btn-ctrl" title="Alternar Rolagem Vertical ↕ / Horizontal ↔ (O)">
+      <!-- Botão Modo YouTube (Horizontal) -->
+      <button id="btnToggleDirection" class="btn-ctrl" title="Alternar Rolagem Vertical ↕ / Letreiro Horizontal ↔ YouTube (O)">
         ↔ YouTube
       </button>
 
-      <button id="btnCameraAlign" class="btn-ctrl" title="Alternar Posição da Coluna (L)">
+      <!-- Botão Alinhamento com a Câmera -->
+      <button id="btnCameraAlign" class="btn-ctrl" title="Alternar Alinhamento com a Câmera: Esquerda / Centro / Direita (L)">
         ◨ Centro
       </button>
 
@@ -362,23 +368,23 @@
         <span id="liveFontSizeVal" style="font-family: monospace; font-weight: bold; width: 26px;">52</span>
       </div>
 
-      <button id="btnFlipH" class="btn-ctrl" title="Espelhar Horizontalmente (M)">⇄ Flip H</button>
-      <button id="btnFlipV" class="btn-ctrl" title="Espelhar Verticalmente">⇅ Flip V</button>
-      <button id="btnToggleVoice" class="btn-ctrl" title="Acompanhamento por Voz">🎙️ Voz</button>
+      <button id="btnFlipH" class="btn-ctrl" title="Espelhamento Horizontal para teleprompter com espelho">⇄ Flip H</button>
+      <button id="btnFlipV" class="btn-ctrl" title="Espelhamento Vertical">⇅ Flip V</button>
+      <button id="btnToggleVoice" class="btn-ctrl" title="Acompanhamento por Voz (Microfone)">🎙️ Voz</button>
       <button id="btnFullscreen" class="btn-ctrl" title="Tela Cheia (F)">⛶ Tela Cheia</button>
     </div>
 
     <!-- Countdown Overlay -->
     <div id="countdownOverlay">
-      <div style="font-size: 16px; color: #a1a1aa; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px;">Iniciando em</div>
+      <div style="font-size: 16px; color: #a1a1aa; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px;">Gravando em</div>
       <div id="countdownNumber">3</div>
-      <div style="font-size: 13px; color: #71717a; margin-top: 16px;">[Espaço] para iniciar imediatamente • [Esc] para cancelar</div>
+      <div style="font-size: 13px; color: #71717a; margin-top: 16px;">Pressione [Espaço] para iniciar imediatamente</div>
     </div>
   </div>
 
   <script>
     (function() {
-      // Estado
+      // Estado da Aplicação
       let isPlaying = false;
       let scrollSpeed = 4;
       let fontSize = 52;
@@ -395,16 +401,6 @@
       let currentScrollX = 0;
       let hideControlsTimeout = null;
       let recognition = null;
-      let wakeLockSentinel = null;
-      let countdownTimer = null;
-
-      // Gravação
-      let isRecordingVideo = false;
-      let mediaRecorder = null;
-      let recordedChunks = [];
-      let cameraStream = null;
-      let recDurationSeconds = 0;
-      let recDurationInterval = null;
 
       // Elementos do DOM
       const editorMode = document.getElementById('editorMode');
@@ -441,6 +437,13 @@
       const pipRecBadge = document.getElementById('pipRecBadge');
       const btnClosePip = document.getElementById('btnClosePip');
 
+      let isRecordingVideo = false;
+      let mediaRecorder = null;
+      let recordedChunks = [];
+      let cameraStream = null;
+      let recDurationSeconds = 0;
+      let recDurationInterval = null;
+
       const liveSpeed = document.getElementById('liveSpeed');
       const liveSpeedVal = document.getElementById('liveSpeedVal');
       const liveFontSize = document.getElementById('liveFontSize');
@@ -450,60 +453,26 @@
       const metricChars = document.getElementById('metricChars');
       const metricTime = document.getElementById('metricTime');
 
-      // Sanitizador simples para evitar injeção acidental de tags
-      function escapeHTML(str) {
-        return str
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&#039;');
-      }
-
-      // Wake Lock API (Evita que a tela apague durante gravações)
-      async function requestWakeLock() {
-        if ('wakeLock' in navigator) {
-          try {
-            wakeLockSentinel = await navigator.wakeLock.request('screen');
-            wakeLockSentinel.addEventListener('release', () => {
-              wakeLockSentinel = null;
-            });
-          } catch (e) {
-            console.warn('Wake Lock não autorizado ou indisponível:', e);
-          }
-        }
-      }
-
-      function releaseWakeLock() {
-        if (wakeLockSentinel) {
-          wakeLockSentinel.release().catch(() => {});
-          wakeLockSentinel = null;
-        }
-      }
-
-      // Scripts de exemplo
-      const pitchExample = `[0:00 - GANCHO]\nVocê já perdeu uma ideia incrível porque não conseguiu explicá-la em 60 segundos?\n\n[PAUSA - 1s]\n\n[0:15 - O PROBLEMA]\nA maioria dos criadores e profissionais tem muito conteúdo, mas na hora de gravar trava ou gagueja.\n\n[0:30 - A SOLUÇÃO]\nCom o Teleprompter Pro Studio, seu olhar fica cravado na lente enquanto o texto flui suavemente no seu ritmo natural.\n\n[PAUSA - Respire]\n\n[0:45 - CHAMADA PARA AÇÃO]\nSem servidores, com gravação integrada e privacidade total. Experimente gravar seu próximo vídeo agora!`;
-
-      const podcastExample = `[DIREÇÃO: Olhar para câmera e respirar]\n\n[SEÇÃO: Abertura]\nQuando alguém diz que vai desconstruir uma ideia, o que isso realmente significa? Destruir tudo o que aprendemos? Ou examinar criticamente aquilo que parecia óbvio?\n\n[PAUSA - 2 segundos]\n\nO filósofo Jacques Derrida tornou a desconstrução conhecida como uma abordagem de leitura crítica. Em vez de aceitar um texto como neutro e perfeitamente coerente, investigava tensões e pressupostos que sustentavam sua estrutura.\n\n[PAUSA - Respire]\n\nPortanto, desconstrução não é simplesmente aniquilar uma verdade. É compreender seus alicerces. Antes de concordar, investigue. Antes de rejeitar, compreenda.`;
-
-      // Inicialização
-      const savedScript = localStorage.getItem('prompter_pro_script') || podcastExample;
-      const savedTitle = localStorage.getItem('prompter_pro_title') || 'Episódio - Desconstrução';
+      // Inicialização do Script
+      const initialContent = "\n[DIREÇÃO: Olhar para câmera e respirar]\n\n[SEÇÃO: Título do Bloco]\n\n[NARRADOR] \n[CONVIDADO] Episódio 1 — O que significa desconstruir?\n[0:00–0:25 | Abertura]\nQuando alguém diz que vai desconstruir uma ideia, o que isso significa? Destruir tudo o que aprendemos? Provar que a religião é falsa? Ou examinar criticamente aquilo que parecia óbvio?\nPara discutir as ideias que influenciam a sociedade, precisamos primeiro entender o que significa desconstruir.\n[0:25–1:15 | O conceito]\nO filósofo Jacques Derrida tornou a desconstrução conhecida como uma abordagem de leitura crítica. Em vez de aceitar um texto ou sistema de pensamento como se fosse perfeitamente simples e coerente, ele investigava tensões, pressupostos e oposições que estruturam seus significados.\nPortanto, desconstrução não é simplesmente destruir uma ideia. É investigar como ela foi construída, quais pressupostos a sustentam e se existem tensões em sua própria estrutura.\n[1:15–2:05 | O cuidado crítico]\nMas precisamos ter cuidado: a palavra é utilizada hoje de diferentes maneiras. Algumas pessoas a empregam para revisar preconceitos e tradições; outras, como sinônimo de rejeitar valores antigos.\nNão devemos confundir todos esses usos.\nE aqui está uma questão fundamental: revelar que uma ideia possui uma história, pressupostos ou influências culturais não demonstra, por si só, que ela seja falsa.\n[2:05–3:35 | Aplicação cristã]\nPense nesta afirmação: “Toda verdade é apenas uma construção social”.\nPodemos perguntar: essa afirmação também é uma construção social? A pergunta não refuta automaticamente todas as teorias relativistas, mas nos obriga a esclarecer o que significa “construção”, se existem verdades independentes de nós e como justificamos nossas conclusões.\nA Bíblia também nos chama ao discernimento. Em 1 Tessalonicenses 5:21, Paulo orienta: “Examinai tudo. Retende o bem”.\nObserve: ele não recomenda aceitar tudo indiscriminadamente, mas também não manda rejeitar tudo por medo.\nA fé cristã não precisa fugir da investigação. Precisa aprender a avaliar as ideias sem distorcê-las.\n[3:35–4:00 | Conclusão]\nDesconstruir uma ideia não é provar que ela está errada. E defender uma ideia não é provar que ela está certa.\nO que decide a questão é a qualidade dos argumentos.\nAntes de rejeitar uma ideia, compreenda-a. Antes de aceitá-la, examine-a.\nComentários para estudo\nJacques Derrida (1930–2004) foi um filósofo francês associado à desconstrução. Seu pensamento investiga a maneira como textos e conceitos produzem significados e como certas oposições aparentemente estáveis podem conter tensões.\nO cuidado apologético: não é intelectualmente correto apresentar Derrida como alguém que simplesmente dizia que nada é verdadeiro ou que qualquer interpretação vale tanto quanto outra. A desconstrução é complexa e admite diferentes interpretações.\nA crítica cristã deve começar pela compreensão do argumento real, e não por uma versão simplificada que seja mais fácil de atacar.\nTextos bíblicos: 1 Tessalonicenses 5:21; Atos 17:11; 1 Pedro 3:15.\nReferências para aprofundamento:\nJacques Derrida, “Letter to a Japanese Friend” (1983).\nStanford Encyclopedia of Philosophy — Derrida⁠.\nInternet Encyclopedia of Philosophy — Deconstruction⁠.\nFrase para divulgação: “Não critique sem compreender. Não concorde sem examinar.”\n";
+      const savedScript = localStorage.getItem('prompter_pro_script') || initialContent;
+      const savedTitle = localStorage.getItem('prompter_pro_title') || 'desconstruindo - Ep1';
       
       scriptTextarea.value = savedScript;
       scriptTitleInput.value = savedTitle;
 
+      // Carregar preferências
       try {
         const savedPrefs = JSON.parse(localStorage.getItem('prompter_pro_prefs') || '{}');
         if (savedPrefs.speed) scrollSpeed = savedPrefs.speed;
         if (savedPrefs.fontSize) fontSize = savedPrefs.fontSize;
         if (savedPrefs.marginWidth) marginWidth = savedPrefs.marginWidth;
         if (savedPrefs.colorTheme) colorTheme = savedPrefs.colorTheme;
-        if (savedPrefs.cameraAlign) cameraAlign = savedPrefs.cameraAlign;
         if (savedPrefs.flipH !== undefined) flipH = savedPrefs.flipH;
         if (savedPrefs.flipV !== undefined) flipV = savedPrefs.flipV;
       } catch (e) {}
 
+      // Atualizar interface de configurações
       document.getElementById('settingFontSize').value = fontSize;
       document.getElementById('lblFontSize').textContent = fontSize;
       document.getElementById('settingSpeed').value = scrollSpeed;
@@ -539,7 +508,6 @@
           fontSize: fontSize,
           marginWidth: marginWidth,
           colorTheme: colorTheme,
-          cameraAlign: cameraAlign,
           flipH: flipH,
           flipV: flipV
         }));
@@ -549,45 +517,22 @@
       scriptTitleInput.addEventListener('input', updateMetrics);
       updateMetrics();
 
-      // Sincronização essencial: se o usuário rolar com mouse/touch, atualiza posições
-      prompterViewport.addEventListener('scroll', () => {
-        if (isHorizontal) {
-          currentScrollX = prompterViewport.scrollLeft;
-        } else {
-          currentScrollY = prompterViewport.scrollTop;
-        }
-      }, { passive: true });
-
-      // Suporte à roda do mouse no modo horizontal
-      prompterViewport.addEventListener('wheel', (e) => {
-        if (isHorizontal && Math.abs(e.deltaY) > 0) {
-          e.preventDefault();
-          prompterViewport.scrollLeft += e.deltaY;
-          currentScrollX = prompterViewport.scrollLeft;
-        }
-      }, { passive: false });
-
-      // Renderizar o texto tratado
+      // Renderizar texto no teleprompter com destaque para [PAUSAS]
       function renderPrompterText() {
         const lines = scriptTextarea.value.split('\n');
         let html = '';
-
         lines.forEach((line, idx) => {
           if (!line.trim()) {
-            html += isHorizontal ? '<span style="display:inline-block; width: 36px;"></span>' : '<div style="height: 1.3em;"></div>';
+            html += isHorizontal ? '<span style="display:inline-block; width: 30px;"></span>' : '<div style="height: 1.2em;"></div>';
           } else {
-            let safeText = escapeHTML(line);
-            // Destaca marcações [PAUSA ...]
-            safeText = safeText.replace(/\[PAUSA([^\]]*)\]/gi, '<span class="pro-pause">[PAUSA$1]</span>');
-
+            const formatted = line.replace(/\[PAUSA([^\]]*)\]/gi, '<span class="pro-pause">[PAUSA$1]</span>');
             if (isHorizontal) {
-              html += `<span class="pro-paragraph" style="display: inline-block; margin-right: 52px; cursor: pointer; white-space: nowrap;" data-idx="${idx}">${safeText}</span>`;
+              html += '<span class="pro-paragraph" style="display: inline-block; margin-right: 48px; cursor: pointer; white-space: nowrap;" data-idx="' + idx + '">' + formatted + '</span>';
             } else {
-              html += `<div class="pro-paragraph" style="cursor: pointer;" data-idx="${idx}">${safeText}</div>`;
+              html += '<div class="pro-paragraph" data-idx="' + idx + '">' + formatted + '</div>';
             }
           }
         });
-
         prompterText.innerHTML = html;
 
         if (isHorizontal) {
@@ -600,7 +545,7 @@
           prompterText.style.whiteSpace = 'nowrap';
           prompterText.style.paddingLeft = '50vw';
           prompterText.style.paddingRight = '100vw';
-          prompterText.style.paddingTop = '22vh';
+          prompterText.style.paddingTop = '18vh';
           prompterText.style.maxWidth = 'none';
           eyelineGuide.style.display = 'none';
         } else {
@@ -618,10 +563,10 @@
 
         applyStyles();
 
-        // Clique num parágrafo pula a rolagem diretamente para ele
+        // Clique em parágrafo para saltar
         const paras = prompterText.querySelectorAll('.pro-paragraph');
         paras.forEach(p => {
-          p.addEventListener('click', () => {
+          p.addEventListener('click', (e) => {
             if (isHorizontal) {
               currentScrollX = p.offsetLeft - (window.innerWidth / 2) + (p.offsetWidth / 2);
               prompterViewport.scrollLeft = Math.max(0, currentScrollX);
@@ -643,6 +588,7 @@
           prompterText.style.textAlign = cameraAlign;
         } else {
           prompterText.style.marginLeft = '0';
+          prompterText.style.paddingLeft = horizontalOffset + 'vw';
         }
 
         const colorMap = {
@@ -653,6 +599,7 @@
         };
         prompterText.style.color = colorMap[colorTheme] || '#fde047';
 
+        // Flip classes
         let transformStr = '';
         if (flipH && flipV) transformStr = 'scale(-1, -1)';
         else if (flipH) transformStr = 'scaleX(-1)';
@@ -663,7 +610,7 @@
         btnFlipV.classList.toggle('active', flipV);
       }
 
-      // Loop de Rolagem Suave
+      // Loop de Rolagem Suave com requestAnimationFrame
       let lastTimestamp = 0;
       function prompterScrollLoop(timestamp) {
         if (!isPlaying) return;
@@ -673,20 +620,21 @@
         lastTimestamp = timestamp;
 
         if (isHorizontal) {
-          const pixelsPerSec = scrollSpeed * 28;
+          const pixelsPerSec = scrollSpeed * 30;
           currentScrollX += pixelsPerSec * delta;
           prompterViewport.scrollLeft = currentScrollX;
-
-          if (prompterViewport.scrollLeft + prompterViewport.clientWidth >= prompterViewport.scrollWidth - 10) {
+          if (prompterViewport.scrollLeft + prompterViewport.clientWidth >= prompterViewport.scrollWidth - 50) {
             pausePrompter();
             return;
           }
         } else {
+          // Velocidade suave vertical
           const pixelsPerSec = scrollSpeed * 18;
           currentScrollY += pixelsPerSec * delta;
           prompterViewport.scrollTop = currentScrollY;
 
-          if (prompterViewport.scrollTop + prompterViewport.clientHeight >= prompterViewport.scrollHeight - 10) {
+          // Se atingir o fim da página
+          if (prompterViewport.scrollTop + prompterViewport.clientHeight >= prompterViewport.scrollHeight - 50) {
             pausePrompter();
             return;
           }
@@ -701,8 +649,11 @@
         playPauseText.textContent = 'Pausar';
         btnPlayPause.style.background = '#eab308';
         lastTimestamp = 0;
-        currentScrollX = prompterViewport.scrollLeft;
-        currentScrollY = prompterViewport.scrollTop;
+        if (isHorizontal) {
+          currentScrollX = prompterViewport.scrollLeft;
+        } else {
+          currentScrollY = prompterViewport.scrollTop;
+        }
         animationFrameId = requestAnimationFrame(prompterScrollLoop);
         resetAutoHideTimer();
       }
@@ -732,61 +683,36 @@
         prompterViewport.scrollLeft = 0;
       }
 
-      function cancelCountdown() {
-        if (countdownTimer) {
-          clearInterval(countdownTimer);
-          countdownTimer = null;
-        }
-        countdownOverlay.style.display = 'none';
-      }
-
       function startCountdown(onComplete) {
-        cancelCountdown();
         countdownOverlay.style.display = 'flex';
         let count = 3;
         countdownNumber.textContent = count;
 
-        function keyHandler(e) {
-          if (e.code === 'Space') {
-            e.preventDefault();
-            finish();
-          } else if (e.key === 'Escape') {
-            e.preventDefault();
-            cleanup();
-            exitPrompter();
-          }
-        }
-
-        function cleanup() {
-          if (countdownTimer) {
-            clearInterval(countdownTimer);
-            countdownTimer = null;
-          }
-          window.removeEventListener('keydown', keyHandler);
-          countdownOverlay.style.display = 'none';
-        }
-
-        function finish() {
-          cleanup();
-          onComplete();
-        }
-
-        window.addEventListener('keydown', keyHandler);
-
-        countdownTimer = setInterval(() => {
+        const interval = setInterval(() => {
           count--;
           if (count > 0) {
             countdownNumber.textContent = count;
           } else {
-            finish();
+            clearInterval(interval);
+            countdownOverlay.style.display = 'none';
+            onComplete();
           }
         }, 1000);
+
+        function skipCountdown(e) {
+          if (e.code === 'Space') {
+            clearInterval(interval);
+            countdownOverlay.style.display = 'none';
+            window.removeEventListener('keydown', skipCountdown);
+            onComplete();
+          }
+        }
+        window.addEventListener('keydown', skipCountdown);
       }
 
       function enterPrompter() {
         editorMode.classList.remove('active');
         prompterMode.classList.add('active');
-        requestWakeLock();
         renderPrompterText();
         restartPrompter();
 
@@ -796,42 +722,15 @@
       }
 
       function exitPrompter() {
-        cancelCountdown();
         pausePrompter();
-        releaseWakeLock();
-
-        // Para gravação de vídeo se estiver ocorrendo
-        if (isRecordingVideo) {
-          stopVideoRecording();
-        }
-        // Desliga a câmera e microfone para não gastar bateria/manter LED aceso
-        stopCameraStream();
-
-        if (isVoiceActive && recognition) {
-          isVoiceActive = false;
-          btnToggleVoice.classList.remove('active');
-          try { recognition.stop(); } catch (e) {}
-        }
-
         if (document.fullscreenElement) {
           document.exitFullscreen().catch(() => {});
         }
-
         prompterMode.classList.remove('active');
         editorMode.classList.add('active');
       }
 
-      // Desativa e libera totalmente as faixas de mídia da câmera/microfone
-      function stopCameraStream() {
-        if (cameraStream) {
-          cameraStream.getTracks().forEach(track => track.stop());
-          cameraStream = null;
-        }
-        cameraPipVideo.srcObject = null;
-        cameraPipContainer.style.display = 'none';
-      }
-
-      // Auto-ocultar a barra flutuante
+      // Auto-hide controls
       function resetAutoHideTimer() {
         showControls();
         if (hideControlsTimeout) clearTimeout(hideControlsTimeout);
@@ -856,16 +755,12 @@
       liveSpeed.addEventListener('input', (e) => {
         scrollSpeed = parseInt(e.target.value, 10);
         liveSpeedVal.textContent = scrollSpeed;
-        document.getElementById('lblSpeed').textContent = scrollSpeed;
-        document.getElementById('settingSpeed').value = scrollSpeed;
         savePreferences();
       });
 
       liveFontSize.addEventListener('input', (e) => {
         fontSize = parseInt(e.target.value, 10);
         liveFontSizeVal.textContent = fontSize;
-        document.getElementById('lblFontSize').textContent = fontSize;
-        document.getElementById('settingFontSize').value = fontSize;
         applyStyles();
         savePreferences();
       });
@@ -875,7 +770,6 @@
         document.getElementById('lblFontSize').textContent = fontSize;
         liveFontSize.value = fontSize;
         liveFontSizeVal.textContent = fontSize;
-        applyStyles();
         savePreferences();
       });
 
@@ -900,6 +794,7 @@
         savePreferences();
       });
 
+      // Botões de Espelhamento
       btnFlipH.addEventListener('click', () => {
         flipH = !flipH;
         applyStyles();
@@ -912,6 +807,7 @@
         savePreferences();
       });
 
+      // Botão Tela Cheia
       btnFullscreen.addEventListener('click', () => {
         if (!document.fullscreenElement) {
           document.documentElement.requestFullscreen().catch(() => {});
@@ -920,7 +816,7 @@
         }
       });
 
-      // Reconhecimento de Voz Robusto com Auto-restart em silêncios
+      // Suporte a Reconhecimento de Voz (Web Speech API)
       const SpeechAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (SpeechAPI) {
         recognition = new SpeechAPI();
@@ -936,31 +832,15 @@
           const words = phrase.toLowerCase().trim().split(/\s+/);
           if (words.length > 0) {
             const lastWord = words[words.length - 1];
-            if (lastWord.length >= 3) {
+            if (lastWord.length >= 4) {
               const full = scriptTextarea.value.toLowerCase();
               const idx = full.indexOf(lastWord);
               if (idx !== -1) {
                 const ratio = idx / full.length;
-                if (!isHorizontal) {
-                  currentScrollY = ratio * (prompterViewport.scrollHeight - window.innerHeight);
-                  prompterViewport.scrollTop = currentScrollY;
-                }
+                currentScrollY = ratio * (prompterViewport.scrollHeight - window.innerHeight);
+                prompterViewport.scrollTop = currentScrollY;
               }
             }
-          }
-        };
-
-        recognition.onend = () => {
-          if (isVoiceActive) {
-            try { recognition.start(); } catch (e) {}
-          }
-        };
-
-        recognition.onerror = () => {
-          if (isVoiceActive) {
-            setTimeout(() => {
-              try { recognition.start(); } catch (e) {}
-            }, 500);
           }
         };
 
@@ -977,61 +857,35 @@
         btnToggleVoice.style.display = 'none';
       }
 
-      // Inicializar Webcam
-      async function setupCamera() {
-        if (!cameraStream) {
-          cameraStream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: 'user', width: { ideal: 1920 } },
-            audio: true
-          });
-          cameraPipVideo.srcObject = cameraStream;
-        }
-        cameraPipContainer.style.display = 'block';
-      }
-
-      // Gravação com seletor seguro de MIME types (Safari, iOS, Chrome, Firefox)
-      function getSupportedMimeType() {
-        const types = [
-          'video/webm;codecs=vp9,opus',
-          'video/webm;codecs=vp8,opus',
-          'video/webm',
-          'video/mp4'
-        ];
-        for (const t of types) {
-          if (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) {
-            return t;
-          }
-        }
-        return '';
-      }
-
+      // Gravação de Vídeo pela Webcam (MediaRecorder)
       async function startVideoRecording() {
         try {
-          await setupCamera();
+          if (!cameraStream) {
+            cameraStream = await navigator.mediaDevices.getUserMedia({
+              video: { facingMode: 'user', width: { ideal: 1920 } },
+              audio: true
+            });
+            cameraPipVideo.srcObject = cameraStream;
+          }
+          cameraPipContainer.style.display = 'block';
+
           recordedChunks = [];
-          
-          const mimeType = getSupportedMimeType();
-          const options = mimeType ? { mimeType } : undefined;
-          
-          mediaRecorder = new MediaRecorder(cameraStream, options);
+          const mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus') ? 'video/webm;codecs=vp9,opus' : 'video/webm';
+          mediaRecorder = new MediaRecorder(cameraStream, { mimeType: mime });
 
           mediaRecorder.ondataavailable = (e) => {
             if (e.data && e.data.size > 0) recordedChunks.push(e.data);
           };
 
           mediaRecorder.onstop = () => {
-            const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
-            const blob = new Blob(recordedChunks, { type: mimeType || 'video/webm' });
+            const blob = new Blob(recordedChunks, { type: 'video/webm' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `take_teleprompter_${Date.now()}.${ext}`;
+            a.download = 'gravacao_teleprompter_' + Date.now() + '.webm';
             document.body.appendChild(a);
             a.click();
-            setTimeout(() => {
-              document.body.removeChild(a);
-              URL.revokeObjectURL(url);
-            }, 1000);
+            document.body.removeChild(a);
           };
 
           mediaRecorder.start(1000);
@@ -1051,7 +905,7 @@
             pipRecBadge.textContent = '● REC ' + timeStr;
           }, 1000);
         } catch (err) {
-          alert('Erro ao acessar a câmera/microfone: ' + (err.message || 'Permissão recusada'));
+          alert('Erro ao acessar a câmera: ' + (err.message || 'Permissão negada'));
         }
       }
 
@@ -1063,7 +917,6 @@
         isRecordingVideo = false;
         recordDot.textContent = '●';
         recordText.textContent = 'Gravar';
-        pipRecBadge.textContent = '● PREVIEW';
         btnRecordVideo.style.background = '#dc2626';
       }
 
@@ -1073,16 +926,10 @@
       });
 
       btnClosePip.addEventListener('click', () => {
-        if (isRecordingVideo) {
-          if (!confirm('Deseja interromper a gravação em andamento para fechar a câmera?')) {
-            return;
-          }
-          stopVideoRecording();
-        }
-        stopCameraStream();
+        cameraPipContainer.style.display = 'none';
       });
 
-      // Atalhos de teclado globais
+      // Atalhos de teclado
       window.addEventListener('keydown', (e) => {
         if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') {
           if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
@@ -1100,33 +947,27 @@
             scrollSpeed = Math.min(18, scrollSpeed + 1);
             liveSpeed.value = scrollSpeed;
             liveSpeedVal.textContent = scrollSpeed;
-            document.getElementById('lblSpeed').textContent = scrollSpeed;
-            document.getElementById('settingSpeed').value = scrollSpeed;
             savePreferences();
           } else if (e.code === 'ArrowDown') {
             e.preventDefault();
             scrollSpeed = Math.max(1, scrollSpeed - 1);
             liveSpeed.value = scrollSpeed;
             liveSpeedVal.textContent = scrollSpeed;
-            document.getElementById('lblSpeed').textContent = scrollSpeed;
-            document.getElementById('settingSpeed').value = scrollSpeed;
             savePreferences();
           } else if (e.code === 'ArrowLeft') {
-            e.preventDefault();
             if (isHorizontal) {
-              currentScrollX = Math.max(0, currentScrollX - 120);
+              currentScrollX = Math.max(0, currentScrollX - 100);
               prompterViewport.scrollLeft = currentScrollX;
             } else {
-              currentScrollY = Math.max(0, currentScrollY - 90);
+              currentScrollY = Math.max(0, currentScrollY - 80);
               prompterViewport.scrollTop = currentScrollY;
             }
           } else if (e.code === 'ArrowRight') {
-            e.preventDefault();
             if (isHorizontal) {
-              currentScrollX += 120;
+              currentScrollX += 100;
               prompterViewport.scrollLeft = currentScrollX;
             } else {
-              currentScrollY += 90;
+              currentScrollY += 80;
               prompterViewport.scrollTop = currentScrollY;
             }
           } else if (e.key === 'o' || e.key === 'O') {
@@ -1137,40 +978,37 @@
             btnFullscreen.click();
           } else if (e.key === 'r' || e.key === 'R') {
             restartPrompter();
-          } else if (e.key === 'm' || e.key === 'M') {
-            btnFlipH.click();
           } else if (e.key === 'Escape') {
             exitPrompter();
+          } else if (e.key === 'h' || e.key === 'H') {
+            btnFlipH.click();
           }
         }
       });
 
-      // Alinhamento da coluna com a câmera
+      // Listeners principais
       function setCameraAlignment(align) {
         cameraAlign = align;
-        horizontalOffset = align === 'left' ? 15 : align === 'right' ? 85 : 50;
+        horizontalOffset = align === 'left' ? 18 : align === 'right' ? 82 : 50;
         btnAlignLeft.classList.toggle('active', align === 'left');
         btnAlignCenter.classList.toggle('active', align === 'center');
         btnAlignRight.classList.toggle('active', align === 'right');
         btnCameraAlign.textContent = align === 'left' ? '◧ Esq' : align === 'right' ? '◨ Dir' : '◨ Centro';
         applyStyles();
-        savePreferences();
       }
 
       btnAlignLeft.addEventListener('click', () => setCameraAlignment('left'));
       btnAlignCenter.addEventListener('click', () => setCameraAlignment('center'));
       btnAlignRight.addEventListener('click', () => setCameraAlignment('right'));
-      
       btnCameraAlign.addEventListener('click', () => {
         const next = cameraAlign === 'left' ? 'center' : cameraAlign === 'center' ? 'right' : 'left';
         setCameraAlignment(next);
       });
 
-      // Alternar orientação (Vertical vs Horizontal / YouTube)
       btnToggleDirection.addEventListener('click', () => {
         isHorizontal = !isHorizontal;
         btnToggleDirection.textContent = isHorizontal ? '↕ Vertical' : '↔ YouTube';
-        btnToggleDirection.style.background = isHorizontal ? 'rgba(239, 68, 68, 0.25)' : '';
+        btnToggleDirection.style.background = isHorizontal ? 'rgba(239, 68, 68, 0.3)' : '';
         btnToggleDirection.style.borderColor = isHorizontal ? '#ef4444' : '';
         btnToggleDirection.style.color = isHorizontal ? '#fca5a5' : '';
         renderPrompterText();
@@ -1182,46 +1020,24 @@
       btnRestart.addEventListener('click', restartPrompter);
       btnExitPrompter.addEventListener('click', exitPrompter);
 
-      // Inserir [PAUSA]
       document.getElementById('btnInsertPause').addEventListener('click', () => {
         const ta = scriptTextarea;
         const start = ta.selectionStart;
         const end = ta.selectionEnd;
         const text = ta.value;
-        const insert = '\n[PAUSA - 2s]\n';
+        const insert = '\n[PAUSA - Respire 2s]\n';
         ta.value = text.substring(0, start) + insert + text.substring(end);
         ta.focus();
         ta.selectionStart = ta.selectionEnd = start + insert.length;
         updateMetrics();
       });
 
-      // Botões de Exemplo (agora funcionais)
-      document.getElementById('btnSamplePitch').addEventListener('click', () => {
-        if (confirm('Deseja carregar o exemplo de Pitch de Vendas? Isso substituirá o texto atual.')) {
-          scriptTitleInput.value = 'Pitch Comercial - 1 Minuto';
-          scriptTextarea.value = pitchExample;
-          updateMetrics();
-        }
-      });
-
-      document.getElementById('btnSamplePodcast').addEventListener('click', () => {
-        if (confirm('Deseja carregar o exemplo de Filosofia/Podcast? Isso substituirá o texto atual.')) {
-          scriptTitleInput.value = 'Episódio - Desconstrução';
-          scriptTextarea.value = podcastExample;
-          updateMetrics();
-        }
-      });
-
-      // Limpar script
       document.getElementById('btnClearScript').addEventListener('click', () => {
-        if (confirm('Tem certeza de que deseja limpar o roteiro completo?')) {
+        if (confirm('Tem certeza de que deseja limpar o texto atual?')) {
           scriptTextarea.value = '';
           updateMetrics();
         }
       });
-
-      // Aplica alinhamento salvo no início
-      setCameraAlignment(cameraAlign);
     })();
   </script>
 </body>
